@@ -1,0 +1,4 @@
+body { font-family: monospace; max-width: 400px; margin:50px auto; text-align:center; background: black; color: cyan; text-shadow: 1px 1px 1px magenta;}
+input, button { margin:5px; padding:8px;background: black; color: magenta; text-shadow: 1px 1px 1px cyan; border: none;}
+#messages { border:1px dotted magenta; height:200px; overflow-y:scroll; margin-bottom:10px; padding:5px; }
+img { width:30px; height:30px; border-radius:50%; vertical-align:middle; margin-right:5px; }
