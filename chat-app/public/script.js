@@ -58,3 +58,58 @@ function sendMsg() {
   socket.emit('message', { room, username, text: msg });
   document.getElementById('msg').value='';
 }
+
+function createRoom() {
+  const roomName = document.getElementById('roomName').value;
+  if (!roomName) return alert('Please provide a room name');
+  
+  fetch('/api/rooms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ roomName })
+  }).then(r => r.json()).then(data => {
+    alert(`Room "${data.name}" created successfully!`);
+    getRoomList();
+  });
+}
+
+function getRoomList() {
+  fetch('/api/rooms')
+    .then(response => response.json())
+    .then(rooms => {
+      const roomListDiv = document.getElementById('roomList');
+      roomListDiv.innerHTML = '';  // Clear previous list
+      rooms.forEach(room => {
+        const roomButton = document.createElement('button');
+        roomButton.textContent = room.name;
+        roomButton.onclick = () => joinRoom(room.id);
+        roomListDiv.appendChild(roomButton);
+      });
+    });
+}
+function joinRoom(roomId) {
+  socket = io();
+  socket.emit('joinRoom', roomId);
+
+  fetch(`/api/groups/${roomId}/messages`)
+    .then(r => r.json())
+    .then(messages => {
+      const msgDiv = document.getElementById('messages');
+      msgDiv.innerHTML = '';  // Clear previous messages
+      messages.forEach(msg => {
+        msgDiv.innerHTML += `<div><b>${msg.username}</b>: ${msg.text}</div>`;
+      });
+    });
+
+  document.getElementById('sendBtn').onclick = () => {
+    const messageText = document.getElementById('msg').value;
+    socket.emit('message', { room: roomId, username: 'Anonymous', text: messageText });
+    document.getElementById('msg').value = '';  // Clear input
+  };
+
+  socket.on('message', (data) => {
+    const msgDiv = document.getElementById('messages');
+    msgDiv.innerHTML += `<div><b>${data.username}</b>: ${data.text}</div>`;
+  });
+}
+
