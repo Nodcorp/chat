@@ -74,13 +74,30 @@ app.post('/api/groups/:id/add', (req, res) => {
   if (!group.members.includes(username)) group.members.push(username);
   res.json(group);
 });
+app.post('/api/rooms', (req, res) => {
+  const { roomName } = req.body;
+  if (!roomName) return res.status(400).json({ message: 'Room name is required' });
 
-// Get group messages
+  if (db.groups.some(group => group.name === roomName)) {
+    return res.status(400).json({ message: 'Room name already taken' });
+  }
+
+  const newRoom = { id: uuid(), name: roomName, members: [], messages: [] };
+  db.groups.push(newRoom);
+
+  res.json(newRoom);
+});
+
+app.get('/api/rooms', (req, res) => {
+  res.json(db.groups.map(group => ({ id: group.id, name: group.name })));
+});
+
 app.get('/api/groups/:id/messages', (req, res) => {
   const group = db.groups.find(g => g.id === req.params.id);
   if (!group) return res.status(404).json({ message: 'Group not found' });
   res.json(group.messages);
 });
+
 app.get('/ping', (req, res) => res.send('pong'));
 io.on('connection', socket => {
   console.log('🟢');
